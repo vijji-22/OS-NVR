@@ -66,11 +66,13 @@ func (pm *pathManager) AddPath(
 	pm.mu.Lock()
 	defer pm.mu.Unlock()
 
+	debug("A")
 	err := newConf.CheckAndFillMissing(name)
 	if err != nil {
 		return nil, err
 	}
 
+	debug("B")
 	if _, exist := pm.pathConfs[name]; exist {
 		return nil, ErrPathAlreadyExist
 	}
@@ -81,6 +83,7 @@ func (pm *pathManager) AddPath(
 	pm.pathConfs[name] = config
 
 	// Add path.
+	debug("C")
 	pm.paths[name] = newPath(
 		ctx,
 		name,
@@ -108,12 +111,22 @@ func (pm *pathManager) AddPath(
 		pm.paths[name].close()
 		delete(pm.paths, name)
 	}()
+	debug("D")
 
 	return hlsMuxer, nil
 }
 
 // Testing.
 func (pm *pathManager) pathExist(name string) bool {
+	debug := func(msg string) {
+		pm.log.Log(log.Entry{
+			Level: log.LevelDebug,
+			Src:   "app",
+			Msg:   fmt.Sprintf("%v: path exists: %v", name, msg),
+		})
+	}
+	debug("lock")
+	defer debug("unlock")
 	pm.mu.Lock()
 	defer pm.mu.Unlock()
 
@@ -125,6 +138,15 @@ func (pm *pathManager) pathExist(name string) bool {
 func (pm *pathManager) onDescribe(
 	pathName string,
 ) (*base.Response, *gortsplib.ServerStream, error) {
+	debug := func(msg string) {
+		pm.log.Log(log.Entry{
+			Level: log.LevelDebug,
+			Src:   "app",
+			Msg:   fmt.Sprintf("%v: on describe: %v", pathName, msg),
+		})
+	}
+	debug("lock")
+	defer debug("unlock")
 	pm.mu.Lock()
 	defer pm.mu.Unlock()
 
@@ -155,6 +177,15 @@ func (pm *pathManager) publisherAdd(
 	name string,
 	session *rtspSession,
 ) (*path, error) {
+	debug := func(msg string) {
+		pm.log.Log(log.Entry{
+			Level: log.LevelDebug,
+			Src:   "app",
+			Msg:   fmt.Sprintf("%v: publisher add: %v", name, msg),
+		})
+	}
+	debug("lock")
+	defer debug("unlock")
 	pm.mu.Lock()
 	defer pm.mu.Unlock()
 
@@ -170,6 +201,15 @@ func (pm *pathManager) readerAdd(
 	name string,
 	session *rtspSession,
 ) (*path, *stream, error) {
+	debug := func(msg string) {
+		pm.log.Log(log.Entry{
+			Level: log.LevelDebug,
+			Src:   "app",
+			Msg:   fmt.Sprintf("%v: reader add: %v", name, msg),
+		})
+	}
+	debug("lock")
+	defer debug("unlock")
 	pm.mu.Lock()
 	defer pm.mu.Unlock()
 
@@ -181,6 +221,15 @@ func (pm *pathManager) readerAdd(
 }
 
 func (pm *pathManager) pathLogfByName(name string) log.Func {
+	debug := func(msg string) {
+		pm.log.Log(log.Entry{
+			Level: log.LevelDebug,
+			Src:   "app",
+			Msg:   fmt.Sprintf("%v: pathlogfbyname: %v", name, msg),
+		})
+	}
+	debug("lock")
+	defer debug("unlock")
 	pm.mu.Lock()
 	defer pm.mu.Unlock()
 
