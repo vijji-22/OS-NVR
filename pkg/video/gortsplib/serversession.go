@@ -474,7 +474,11 @@ func (ss *ServerSession) handleAnnounce( //nolint:funlen
 	}
 
 	for _, track := range tracks {
-		trackURL, err := track.url(req.URL)
+		// Check which value it panics on.
+		x := track.url
+		_ = x
+		url := req.URL
+		trackURL, err := track.url(url)
 		if err != nil {
 			return &base.Response{
 				StatusCode: base.StatusBadRequest,
