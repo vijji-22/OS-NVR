@@ -74,6 +74,8 @@ func (pa *path) logf(level log.Level, format string, a ...interface{}) {
 }
 
 func (pa *path) close() {
+	pa.logf(log.LevelDebug, "close lock")
+	defer pa.logf(log.LevelDebug, "close unlock")
 	pa.mu.Lock()
 	defer pa.mu.Unlock()
 	if pa.canceled {
@@ -125,6 +127,8 @@ func (pa *path) streamGet() (*stream, error) {
 
 // publisherAdd is called by a publisher through pathManager.
 func (pa *path) publisherAdd(session *rtspSession) (*path, error) {
+	pa.logf(log.LevelDebug, "publisherAdd lock")
+	defer pa.logf(log.LevelDebug, "publisherAdd unlock")
 	pa.mu.Lock()
 	defer pa.mu.Unlock()
 	if pa.canceled {
@@ -141,6 +145,9 @@ func (pa *path) publisherAdd(session *rtspSession) (*path, error) {
 
 // publisherStart is called by a publisher.
 func (pa *path) publisherStart(tracks gortsplib.Tracks) (*stream, error) {
+	pa.logf(log.LevelDebug, "publisherStart lock")
+	defer pa.logf(log.LevelDebug, "publisherStart unlock")
+
 	pa.mu.Lock()
 	defer pa.mu.Unlock()
 	if pa.canceled {
@@ -160,6 +167,9 @@ func (pa *path) publisherStart(tracks gortsplib.Tracks) (*stream, error) {
 
 // readerRemove is called by a rtsp session.
 func (pa *path) readerRemove(session *rtspSession) {
+	pa.logf(log.LevelDebug, "readerRemove lock")
+	defer pa.logf(log.LevelDebug, "readerRemove unlock")
+
 	pa.mu.Lock()
 	defer pa.mu.Unlock()
 	if pa.canceled {
@@ -171,6 +181,9 @@ func (pa *path) readerRemove(session *rtspSession) {
 
 // readerAdd is called by a reader through pathManager.
 func (pa *path) readerAdd(session *rtspSession) (*path, *stream, error) {
+	pa.logf(log.LevelDebug, "readerAdd lock")
+	defer pa.logf(log.LevelDebug, "readerAdd unlock")
+
 	pa.mu.Lock()
 	defer pa.mu.Unlock()
 	if pa.canceled {
@@ -187,6 +200,8 @@ func (pa *path) readerAdd(session *rtspSession) (*path, *stream, error) {
 
 // readerStart is called by a rtsp session.
 func (pa *path) readerStart(session *rtspSession) {
+	pa.logf(log.LevelDebug, "readerStart lock")
+	defer pa.logf(log.LevelDebug, "readerStart unlock")
 	pa.mu.Lock()
 	defer pa.mu.Unlock()
 	if pa.canceled {

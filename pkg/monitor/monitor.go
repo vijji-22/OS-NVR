@@ -208,8 +208,8 @@ var ErrNotExist = errors.New("monitor does not exist")
 
 // MonitorDelete deletes monitor by id.
 func (m *Manager) MonitorDelete(id string) error {
-	defer m.mu.Unlock()
 	m.mu.Lock()
+	defer m.mu.Unlock()
 
 	monitor, exists := m.runningMonitors[id]
 	if !exists {
@@ -307,6 +307,10 @@ type Monitor struct {
 	cancel func()
 }
 
+func (m *Monitor) debug(msg string) {
+	m.logf(log.LevelDebug, msg)
+}
+
 type (
 	logFunc func(log.Level, string, ...interface{})
 )
@@ -397,7 +401,9 @@ func (m *Monitor) stop() {
 	if m.cancel != nil {
 		m.cancel()
 	}
+	m.debug("stopping")
 	m.WG.Wait()
+	m.debug("stopped")
 }
 
 // InputProcess monitor input process.
@@ -519,10 +525,10 @@ func (i *InputProcess) Cancel() {
 }
 
 func (i *InputProcess) start(ctx context.Context) {
+	defer i.WG.Done()
 	for {
 		if ctx.Err() != nil {
 			i.logf(log.LevelInfo, "%v process: stopped", i.ProcessName())
-			i.WG.Done()
 			return
 		}
 
@@ -543,7 +549,9 @@ func runInputProcess(ctx context.Context, i *InputProcess) error {
 	defer cancel2()
 
 	pathConf := video.PathConf{MonitorID: i.Config.ID(), IsSub: i.IsSubInput()}
+	i.logf(log.LevelDebug, "runInputProcess: A")
 	serverPath, err := i.newVideoServerPath(processCTX, i.rtspPathName(), pathConf)
+	i.logf(log.LevelDebug, "runInputProcess: B")
 	if err != nil {
 		return fmt.Errorf("add path to RTSP server: %w", err)
 	}
